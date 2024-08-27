@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRUD con Local Storage</title>
+    <style>
+        /* Estilos iguales que antes */
+        body { font-family: Arial, sans-serif; background-color: #f7f7f7; margin: 0; padding: 20px; }
+        h1 { text-align: center; color: #333; }
+        .form-container { background-color: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); max-width: 400px; margin: 0 auto; margin-bottom: 20px; }
+        .form-container input[type="text"] { width: 100%; padding: 10px; margin: 10px 0; border-radius: 4px; border: 1px solid #ddd; }
+        .form-container button { padding: 10px 15px; border: none; border-radius: 4px; background-color: #28a745; color: white; cursor: pointer; font-size: 16px; margin-right: 10px; }
+        .form-container button:hover { background-color: #218838; }
+        table { width: 100%; max-width: 600px; margin: 0 auto; background-color: #fff; border-collapse: collapse; border-radius: 8px; overflow: hidden; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); }
+        table, th, td { border: 1px solid #ddd; }
+        th, td { padding: 10px; text-align: left; }
+        th { background-color: #007bff; color: white; }
+        .actions button { padding: 5px 10px; border: none; border-radius: 4px; cursor: pointer; color: white; margin-right: 5px; }
+        .actions .edit-btn { background-color: #ffc107; }
+        .actions .edit-btn:hover { background-color: #e0a800; }
+        .actions .delete-btn { background-color: #dc3545; }
+        .actions .delete-btn:hover { background-color: #c82333; }
+    </style>
+</head>
+<body>
+
+    <h1>CRUD con Local Storage</h1>
+
+    <div class="form-container">
+        <input type="text" id="name" placeholder="Ingrese el nombre">
+        <input type="hidden" id="edit-index">
+        <button onclick="addOrUpdateItem()">Agregar</button>
+        <button onclick="clearForm()">Limpiar</button>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Nombre</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody id="items-list">
+            <!-- Aquí se cargarán los ítems -->
+        </tbody>
+    </table>
+
+    <script>
+        let items = JSON.parse(localStorage.getItem('items')) || [];
+
+        function loadItems() {
+            const itemsList = document.getElementById('items-list');
+            itemsList.innerHTML = '';
+
+            items.forEach((item, index) => {
+                itemsList.innerHTML += `
+                    <tr>
+                        <td>${index + 1}</td>
+                        <td>${item}</td>
+                        <td class="actions">
+                            <button class="edit-btn" onclick="editItem(${index})">Editar</button>
+                            <button class="delete-btn" onclick="deleteItem(${index})">Eliminar</button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function addOrUpdateItem() {
+            const nameInput = document.getElementById('name');
+            const editIndex = document.getElementById('edit-index').value;
+
+            if (nameInput.value.trim() === '') {
+                alert('Por favor, ingrese un nombre.');
+                return;
+            }
+
+            if (editIndex === '') {
+                // Agregar nuevo ítem
+                items.push(nameInput.value);
+            } else {
+                // Actualizar ítem existente
+                items[editIndex] = nameInput.value;
+            }
+
+            localStorage.setItem('items', JSON.stringify(items));
+            clearForm();
+            loadItems();
+            sendResponse('success', 'Item agregado o actualizado con éxito');
+        }
+
+        function editItem(index) {
+            const nameInput = document.getElementById('name');
+            nameInput.value = items[index];
+            document.getElementById('edit-index').value = index;
+        }
+
+        function deleteItem(index) {
+            items.splice(index, 1);
+            localStorage.setItem('items', JSON.stringify(items));
+            loadItems();
+            sendResponse('success', 'Item eliminado con éxito');
+        }
+
+        function clearForm() {
+            document.getElementById('name').value = '';
+            document.getElementById('edit-index').value = '';
+        }
+
+        function sendResponse(status, message, data = null) {
+            const response = { status, message, data };
+            window.parent.postMessage(response, "*");
+        }
+
+        window.addEventListener("message", function(event) {
+            const { action, data } = event.data;
+
+            switch (action) {
+                case 'getItems':
+                    sendResponse('success', 'Items retrieved successfully', items);
+                    break;
+                case 'addItem':
+                    if (data && data.name) {
+                        items.push(data.name);
+                        localStorage.setItem('items', JSON.stringify(items));
+                        loadItems();
+                        sendResponse('success', 'Item agregado con éxito');
+                    } else {
+                        sendResponse('error', 'No se proporcionó nombre');
+                    }
+                    break;
+                case 'deleteItem':
+                    if (data && data.index !== undefined) {
+                        items.splice(data.index, 1);
+                        localStorage.setItem('items', JSON.stringify(items));
+                        loadItems();
+                        sendResponse('success', 'Item eliminado con éxito');
+                    } else {
+                        sendResponse('error', 'No se proporcionó índice');
+                    }
+                    break;
+                default:
+                    sendResponse('error', 'Acción no válida');
+            }
+        }, false);
+
+        // Cargar los ítems cuando se cargue la página
+        loadItems();
+    </script>
+
+</body>
+</html>
