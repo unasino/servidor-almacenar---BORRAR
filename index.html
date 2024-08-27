@@ -1,4 +1,6 @@
 
+
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -186,31 +188,45 @@
             document.getElementById('edit-index').value = '';
         }
 
-        function getItems() {
-            return items;
+        // Funciones para simular la API
+        function handleApiRequest(req) {
+            return new Promise((resolve, reject) => {
+                if (req.url === '/items' && req.method === 'GET') {
+                    resolve({
+                        status: 200,
+                        json: () => Promise.resolve(items)
+                    });
+                } else if (req.url.startsWith('/items/') && req.method === 'DELETE') {
+                    const index = parseInt(req.url.split('/')[2], 10);
+                    items.splice(index, 1);
+                    localStorage.setItem('items', JSON.stringify(items));
+                    resolve({
+                        status: 200,
+                        json: () => Promise.resolve({ success: true })
+                    });
+                } else if (req.url === '/items' && req.method === 'POST') {
+                    req.json().then(body => {
+                        if (body.index !== undefined) {
+                            items[body.index] = body.value;
+                        } else {
+                            items.push(body.value);
+                        }
+                        localStorage.setItem('items', JSON.stringify(items));
+                        resolve({
+                            status: 200,
+                            json: () => Promise.resolve({ success: true })
+                        });
+                    });
+                } else {
+                    reject({ status: 404 });
+                }
+            });
         }
 
-        function getItem(index) {
-            return items[index];
+        // Interceptar solicitudes
+        function fetch(url, options) {
+            return handleApiRequest({ url, method: options.method, json: () => options.body });
         }
-
-        function setItem(index, value) {
-            items[index] = value;
-            localStorage.setItem('items', JSON.stringify(items));
-            loadItems();
-        }
-
-        function deleteItemByIndex(index) {
-            items.splice(index, 1);
-            localStorage.setItem('items', JSON.stringify(items));
-            loadItems();
-        }
-
-        // Exponer funciones como "API"
-        window.getItems = getItems;
-        window.getItem = getItem;
-        window.setItem = setItem;
-        window.deleteItemByIndex = deleteItemByIndex;
 
         // Cargar los ítems cuando se cargue la página
         loadItems();
