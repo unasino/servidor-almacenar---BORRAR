@@ -190,7 +190,7 @@
         function sendData() {
             const jsonData = JSON.stringify(items, null, 2);
             // Enviar los datos a la página destino
-            const targetWindow = window.open('pagina2.html', '_blank'); // Reemplaza con la URL correcta de la página destino
+            const targetWindow = window.open('https://unasino.github.io/cliente---borrar/', '_blank'); // Reemplaza con la URL correcta de la página destino
             targetWindow.postMessage(jsonData, '*'); // Cambia '*' por el dominio específico si lo conoces
         }
 
