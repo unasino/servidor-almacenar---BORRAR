@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -45,6 +44,7 @@
             cursor: pointer;
             font-size: 16px;
             margin-right: 10px;
+            margin-top: 10px;
         }
 
         .form-container button:hover {
@@ -100,6 +100,19 @@
         .actions .delete-btn:hover {
             background-color: #c82333;
         }
+
+        #json-output {
+            white-space: pre-wrap;
+            background-color: #f0f0f0;
+            padding: 10px;
+            margin-top: 20px;
+            border-radius: 8px;
+            max-width: 600px;
+            margin: 20px auto;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            font-family: "Courier New", Courier, monospace;
+            overflow-x: auto;
+        }
     </style>
 </head>
 <body>
@@ -111,7 +124,7 @@
         <input type="hidden" id="edit-index">
         <button onclick="addOrUpdateItem()">Agregar</button>
         <button onclick="clearForm()">Limpiar</button>
-        <button class="view-data-btn" onclick="viewData()">Ver Datos</button>
+        <button onclick="showData()">Ver Datos</button>
     </div>
 
     <table>
@@ -126,6 +139,8 @@
             <!-- Aquí se cargarán los ítems -->
         </tbody>
     </table>
+
+    <div id="json-output"></div>
 
     <script>
         let items = JSON.parse(localStorage.getItem('items')) || [];
@@ -187,13 +202,26 @@
             document.getElementById('edit-index').value = '';
         }
 
-        function viewData() {
-            const jsonData = JSON.stringify(items, null, 2);
-            const receiverWindow = window.open('https://unasino.github.io/cliente---borrar/', 'ReceiverWindow');
-            receiverWindow.onload = function() {
-                receiverWindow.postMessage(jsonData, '*');
-            };
+        function showData() {
+            const jsonData = JSON.stringify(items, null, 2); // Formato legible con 2 espacios de indentación
+            const outputElement = document.getElementById('json-output');
+            outputElement.textContent = jsonData;
         }
+
+        // Función para enviar datos al cliente que lo solicite
+        function sendDataToClient() {
+            const jsonData = JSON.stringify(items);
+            window.parent.postMessage({ type: 'data', payload: jsonData }, '*');
+        }
+
+        // Manejar solicitudes del cliente
+        window.addEventListener('message', (event) => {
+            if (event.origin === "https://unasino.github.io") { // Verifica que el mensaje provenga de la página correcta
+                if (event.data.type === 'requestData') {
+                    sendDataToClient();
+                }
+            }
+        });
 
         // Cargar los ítems cuando se cargue la página
         loadItems();
