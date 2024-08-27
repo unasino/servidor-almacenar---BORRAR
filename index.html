@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -5,7 +6,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CRUD con Local Storage</title>
     <style>
-        /* Tu CSS existente */
         body {
             font-family: Arial, sans-serif;
             background-color: #f7f7f7;
@@ -186,39 +186,34 @@
             document.getElementById('edit-index').value = '';
         }
 
+        function getItems() {
+            return items;
+        }
+
+        function getItem(index) {
+            return items[index];
+        }
+
+        function setItem(index, value) {
+            items[index] = value;
+            localStorage.setItem('items', JSON.stringify(items));
+            loadItems();
+        }
+
+        function deleteItemByIndex(index) {
+            items.splice(index, 1);
+            localStorage.setItem('items', JSON.stringify(items));
+            loadItems();
+        }
+
+        // Exponer funciones como "API"
+        window.getItems = getItems;
+        window.getItem = getItem;
+        window.setItem = setItem;
+        window.deleteItemByIndex = deleteItemByIndex;
+
         // Cargar los ítems cuando se cargue la página
         loadItems();
-
-        // Manejo de mensajes desde el iframe
-        window.addEventListener('message', (event) => {
-            const { action, data } = event.data;
-
-            switch (action) {
-                case 'getItems':
-                    event.source.postMessage({ action: 'items', data: items }, event.origin);
-                    break;
-                case 'addItem':
-                    items.push(data.name);
-                    localStorage.setItem('items', JSON.stringify(items));
-                    loadItems();
-                    event.source.postMessage({ action: 'success', message: 'Item added' }, event.origin);
-                    break;
-                case 'deleteItem':
-                    items.splice(data.index, 1);
-                    localStorage.setItem('items', JSON.stringify(items));
-                    loadItems();
-                    event.source.postMessage({ action: 'success', message: 'Item deleted' }, event.origin);
-                    break;
-                case 'updateItem':
-                    items[data.index] = data.name;
-                    localStorage.setItem('items', JSON.stringify(items));
-                    loadItems();
-                    event.source.postMessage({ action: 'success', message: 'Item updated' }, event.origin);
-                    break;
-                default:
-                    event.source.postMessage({ action: 'error', message: 'Unknown action' }, event.origin);
-            }
-        });
     </script>
 
 </body>
