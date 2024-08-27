@@ -1,6 +1,4 @@
 
-
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -8,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CRUD con Local Storage</title>
     <style>
-        body {
+         body {
             font-family: Arial, sans-serif;
             background-color: #f7f7f7;
             margin: 0;
@@ -113,6 +111,7 @@
         <input type="hidden" id="edit-index">
         <button onclick="addOrUpdateItem()">Agregar</button>
         <button onclick="clearForm()">Limpiar</button>
+        <button class="view-data-btn" onclick="sendData()">Enviar Datos</button>
     </div>
 
     <table>
@@ -188,45 +187,17 @@
             document.getElementById('edit-index').value = '';
         }
 
-        // Funciones para simular la API
-        function handleApiRequest(req) {
-            return new Promise((resolve, reject) => {
-                if (req.url === '/items' && req.method === 'GET') {
-                    resolve({
-                        status: 200,
-                        json: () => Promise.resolve(items)
-                    });
-                } else if (req.url.startsWith('/items/') && req.method === 'DELETE') {
-                    const index = parseInt(req.url.split('/')[2], 10);
-                    items.splice(index, 1);
-                    localStorage.setItem('items', JSON.stringify(items));
-                    resolve({
-                        status: 200,
-                        json: () => Promise.resolve({ success: true })
-                    });
-                } else if (req.url === '/items' && req.method === 'POST') {
-                    req.json().then(body => {
-                        if (body.index !== undefined) {
-                            items[body.index] = body.value;
-                        } else {
-                            items.push(body.value);
-                        }
-                        localStorage.setItem('items', JSON.stringify(items));
-                        resolve({
-                            status: 200,
-                            json: () => Promise.resolve({ success: true })
-                        });
-                    });
-                } else {
-                    reject({ status: 404 });
-                }
-            });
+        function sendData() {
+            const jsonData = JSON.stringify(items, null, 2);
+            // Enviar los datos a la página destino
+            const targetWindow = window.open('pagina2.html', '_blank'); // Reemplaza con la URL correcta de la página destino
+            targetWindow.postMessage(jsonData, '*'); // Cambia '*' por el dominio específico si lo conoces
         }
 
-        // Interceptar solicitudes
-        function fetch(url, options) {
-            return handleApiRequest({ url, method: options.method, json: () => options.body });
-        }
+        window.addEventListener('message', (event) => {
+            if (event.origin !== 'http://example.com') return; // Reemplaza con el dominio correcto
+            console.log('Mensaje recibido:', event.data);
+        });
 
         // Cargar los ítems cuando se cargue la página
         loadItems();
