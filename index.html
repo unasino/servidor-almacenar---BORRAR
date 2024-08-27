@@ -5,22 +5,101 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CRUD con Local Storage</title>
     <style>
-        /* Estilos iguales que antes */
-        body { font-family: Arial, sans-serif; background-color: #f7f7f7; margin: 0; padding: 20px; }
-        h1 { text-align: center; color: #333; }
-        .form-container { background-color: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); max-width: 400px; margin: 0 auto; margin-bottom: 20px; }
-        .form-container input[type="text"] { width: 100%; padding: 10px; margin: 10px 0; border-radius: 4px; border: 1px solid #ddd; }
-        .form-container button { padding: 10px 15px; border: none; border-radius: 4px; background-color: #28a745; color: white; cursor: pointer; font-size: 16px; margin-right: 10px; }
-        .form-container button:hover { background-color: #218838; }
-        table { width: 100%; max-width: 600px; margin: 0 auto; background-color: #fff; border-collapse: collapse; border-radius: 8px; overflow: hidden; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); }
-        table, th, td { border: 1px solid #ddd; }
-        th, td { padding: 10px; text-align: left; }
-        th { background-color: #007bff; color: white; }
-        .actions button { padding: 5px 10px; border: none; border-radius: 4px; cursor: pointer; color: white; margin-right: 5px; }
-        .actions .edit-btn { background-color: #ffc107; }
-        .actions .edit-btn:hover { background-color: #e0a800; }
-        .actions .delete-btn { background-color: #dc3545; }
-        .actions .delete-btn:hover { background-color: #c82333; }
+        /* Tu CSS existente */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f7f7f7;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+
+        .form-container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            max-width: 400px;
+            margin: 0 auto;
+            margin-bottom: 20px;
+        }
+
+        .form-container input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+
+        .form-container button {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            background-color: #28a745;
+            color: white;
+            cursor: pointer;
+            font-size: 16px;
+            margin-right: 10px;
+        }
+
+        .form-container button:hover {
+            background-color: #218838;
+        }
+
+        table {
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #fff;
+            border-collapse: collapse;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #007bff;
+            color: white;
+        }
+
+        .actions button {
+            padding: 5px 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            color: white;
+            margin-right: 5px;
+        }
+
+        .actions .edit-btn {
+            background-color: #ffc107;
+        }
+
+        .actions .edit-btn:hover {
+            background-color: #e0a800;
+        }
+
+        .actions .delete-btn {
+            background-color: #dc3545;
+        }
+
+        .actions .delete-btn:hover {
+            background-color: #c82333;
+        }
     </style>
 </head>
 <body>
@@ -88,7 +167,6 @@
             localStorage.setItem('items', JSON.stringify(items));
             clearForm();
             loadItems();
-            sendResponse('success', 'Item agregado o actualizado con éxito');
         }
 
         function editItem(index) {
@@ -101,7 +179,6 @@
             items.splice(index, 1);
             localStorage.setItem('items', JSON.stringify(items));
             loadItems();
-            sendResponse('success', 'Item eliminado con éxito');
         }
 
         function clearForm() {
@@ -109,45 +186,39 @@
             document.getElementById('edit-index').value = '';
         }
 
-        function sendResponse(status, message, data = null) {
-            const response = { status, message, data };
-            window.parent.postMessage(response, "*");
-        }
+        // Cargar los ítems cuando se cargue la página
+        loadItems();
 
-        window.addEventListener("message", function(event) {
+        // Manejo de mensajes desde el iframe
+        window.addEventListener('message', (event) => {
             const { action, data } = event.data;
 
             switch (action) {
                 case 'getItems':
-                    sendResponse('success', 'Items retrieved successfully', items);
+                    event.source.postMessage({ action: 'items', data: items }, event.origin);
                     break;
                 case 'addItem':
-                    if (data && data.name) {
-                        items.push(data.name);
-                        localStorage.setItem('items', JSON.stringify(items));
-                        loadItems();
-                        sendResponse('success', 'Item agregado con éxito');
-                    } else {
-                        sendResponse('error', 'No se proporcionó nombre');
-                    }
+                    items.push(data.name);
+                    localStorage.setItem('items', JSON.stringify(items));
+                    loadItems();
+                    event.source.postMessage({ action: 'success', message: 'Item added' }, event.origin);
                     break;
                 case 'deleteItem':
-                    if (data && data.index !== undefined) {
-                        items.splice(data.index, 1);
-                        localStorage.setItem('items', JSON.stringify(items));
-                        loadItems();
-                        sendResponse('success', 'Item eliminado con éxito');
-                    } else {
-                        sendResponse('error', 'No se proporcionó índice');
-                    }
+                    items.splice(data.index, 1);
+                    localStorage.setItem('items', JSON.stringify(items));
+                    loadItems();
+                    event.source.postMessage({ action: 'success', message: 'Item deleted' }, event.origin);
+                    break;
+                case 'updateItem':
+                    items[data.index] = data.name;
+                    localStorage.setItem('items', JSON.stringify(items));
+                    loadItems();
+                    event.source.postMessage({ action: 'success', message: 'Item updated' }, event.origin);
                     break;
                 default:
-                    sendResponse('error', 'Acción no válida');
+                    event.source.postMessage({ action: 'error', message: 'Unknown action' }, event.origin);
             }
-        }, false);
-
-        // Cargar los ítems cuando se cargue la página
-        loadItems();
+        });
     </script>
 
 </body>
