@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CRUD con Local Storage</title>
     <style>
-         body {
+        body {
             font-family: Arial, sans-serif;
             background-color: #f7f7f7;
             margin: 0;
@@ -111,7 +111,7 @@
         <input type="hidden" id="edit-index">
         <button onclick="addOrUpdateItem()">Agregar</button>
         <button onclick="clearForm()">Limpiar</button>
-        <button class="view-data-btn" onclick="sendData()">Enviar Datos</button>
+        <button class="view-data-btn" onclick="viewData()">Ver Datos</button>
     </div>
 
     <table>
@@ -187,17 +187,13 @@
             document.getElementById('edit-index').value = '';
         }
 
-        function sendData() {
+        function viewData() {
             const jsonData = JSON.stringify(items, null, 2);
-            // Enviar los datos a la página destino
-            const targetWindow = window.open('https://unasino.github.io/cliente---borrar/', '_blank'); // Reemplaza con la URL correcta de la página destino
-            targetWindow.postMessage(jsonData, '*'); // Cambia '*' por el dominio específico si lo conoces
+            const receiverWindow = window.open('https://unasino.github.io/cliente---borrar/', 'ReceiverWindow');
+            receiverWindow.onload = function() {
+                receiverWindow.postMessage(jsonData, '*');
+            };
         }
-
-        window.addEventListener('message', (event) => {
-            if (event.origin !== 'https://unasino.github.io/cliente---borrar/') return; // Reemplaza con el dominio correcto
-            console.log('Mensaje recibido:', event.data);
-        });
 
         // Cargar los ítems cuando se cargue la página
         loadItems();
