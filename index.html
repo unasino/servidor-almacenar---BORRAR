@@ -3,229 +3,48 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CRUD con Local Storage</title>
+    <title>Hola Nomas</title>
+    
+    <!-- Metaetiquetas para SEO -->
+    <meta name="description" content="Una página simple que dice 'Hola, nomas'">
+    <meta name="keywords" content="Hola, Nomas, Página simple, Ejemplo">
+    <meta name="author" content="Tu Nombre">
+
+    <!-- Metaetiquetas para compartir en redes sociales -->
+    <meta property="og:title" content="Hola Nomas">
+    <meta property="og:description" content="Visita esta página simple que solo dice 'Hola, nomas'.">
+    <meta property="og:image" content="https://i.ibb.co/4NB8R1K/pixel.png">
+    <meta property="og:url" content="https://tusitio.com/hola-nomas">
+    <meta property="og:type" content="website">
+
+    <!-- Metaetiquetas para WhatsApp -->
+    <meta property="og:image" content="https://i.ibb.co/4NB8R1K/pixel.png">
+    <meta name="twitter:card" content="summary_large_image">
+    
+    <!-- CSS -->
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #f7f7f7;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
             margin: 0;
-            padding: 20px;
+            background-color: #f0f0f0;
         }
 
         h1 {
-            text-align: center;
             color: #333;
-        }
-
-        .form-container {
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            max-width: 400px;
-            margin: 0 auto;
-            margin-bottom: 20px;
-        }
-
-        .form-container input[type="text"] {
-            width: 100%;
-            padding: 10px;
-            margin: 10px 0;
-            border-radius: 4px;
-            border: 1px solid #ddd;
-        }
-
-        .form-container button {
-            padding: 10px 15px;
-            border: none;
-            border-radius: 4px;
-            background-color: #28a745;
-            color: white;
-            cursor: pointer;
-            font-size: 16px;
-            margin-right: 10px;
-            margin-top: 10px;
-        }
-
-        .form-container button:hover {
-            background-color: #218838;
-        }
-
-        table {
-            width: 100%;
-            max-width: 600px;
-            margin: 0 auto;
-            background-color: #fff;
-            border-collapse: collapse;
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        }
-
-        table, th, td {
-            border: 1px solid #ddd;
-        }
-
-        th, td {
-            padding: 10px;
-            text-align: left;
-        }
-
-        th {
-            background-color: #007bff;
-            color: white;
-        }
-
-        .actions button {
-            padding: 5px 10px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            color: white;
-            margin-right: 5px;
-        }
-
-        .actions .edit-btn {
-            background-color: #ffc107;
-        }
-
-        .actions .edit-btn:hover {
-            background-color: #e0a800;
-        }
-
-        .actions .delete-btn {
-            background-color: #dc3545;
-        }
-
-        .actions .delete-btn:hover {
-            background-color: #c82333;
-        }
-
-        #json-output {
-            white-space: pre-wrap;
-            background-color: #f0f0f0;
-            padding: 10px;
-            margin-top: 20px;
-            border-radius: 8px;
-            max-width: 600px;
-            margin: 20px auto;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            font-family: "Courier New", Courier, monospace;
-            overflow-x: auto;
+            font-size: 48px;
         }
     </style>
 </head>
 <body>
+    <h1>Hola, nomas</h1>
 
-    <h1>CRUD con Local Storage</h1>
-
-    <div class="form-container">
-        <input type="text" id="name" placeholder="Ingrese el nombre">
-        <input type="hidden" id="edit-index">
-        <button onclick="addOrUpdateItem()">Agregar</button>
-        <button onclick="clearForm()">Limpiar</button>
-        <button onclick="showData()">Ver Datos</button>
-    </div>
-
-    <table>
-        <thead>
-            <tr>
-                <th>#</th>
-                <th>Nombre</th>
-                <th>Acciones</th>
-            </tr>
-        </thead>
-        <tbody id="items-list">
-            <!-- Aquí se cargarán los ítems -->
-        </tbody>
-    </table>
-
-    <div id="json-output"></div>
-
+    <!-- JavaScript -->
     <script>
-        let items = JSON.parse(localStorage.getItem('items')) || [];
-
-        function loadItems() {
-            const itemsList = document.getElementById('items-list');
-            itemsList.innerHTML = '';
-
-            items.forEach((item, index) => {
-                itemsList.innerHTML += `
-                    <tr>
-                        <td>${index + 1}</td>
-                        <td>${item}</td>
-                        <td class="actions">
-                            <button class="edit-btn" onclick="editItem(${index})">Editar</button>
-                            <button class="delete-btn" onclick="deleteItem(${index})">Eliminar</button>
-                        </td>
-                    </tr>
-                `;
-            });
-        }
-
-        function addOrUpdateItem() {
-            const nameInput = document.getElementById('name');
-            const editIndex = document.getElementById('edit-index').value;
-
-            if (nameInput.value.trim() === '') {
-                alert('Por favor, ingrese un nombre.');
-                return;
-            }
-
-            if (editIndex === '') {
-                // Agregar nuevo ítem
-                items.push(nameInput.value);
-            } else {
-                // Actualizar ítem existente
-                items[editIndex] = nameInput.value;
-            }
-
-            localStorage.setItem('items', JSON.stringify(items));
-            clearForm();
-            loadItems();
-        }
-
-        function editItem(index) {
-            const nameInput = document.getElementById('name');
-            nameInput.value = items[index];
-            document.getElementById('edit-index').value = index;
-        }
-
-        function deleteItem(index) {
-            items.splice(index, 1);
-            localStorage.setItem('items', JSON.stringify(items));
-            loadItems();
-        }
-
-        function clearForm() {
-            document.getElementById('name').value = '';
-            document.getElementById('edit-index').value = '';
-        }
-
-        function showData() {
-            const jsonData = JSON.stringify(items, null, 2); // Formato legible con 2 espacios de indentación
-            const outputElement = document.getElementById('json-output');
-            outputElement.textContent = jsonData;
-        }
-
-        // Función para enviar datos al cliente que lo solicite
-        function sendDataToClient() {
-            const jsonData = JSON.stringify(items);
-            window.parent.postMessage({ type: 'data', payload: jsonData }, '*');
-        }
-
-        // Manejar solicitudes del cliente
-        window.addEventListener('message', (event) => {
-            if (event.origin === "https://unasino.github.io") { // Verifica que el mensaje provenga de la página correcta
-                if (event.data.type === 'requestData') {
-                    sendDataToClient();
-                }
-            }
-        });
-
-        // Cargar los ítems cuando se cargue la página
-        loadItems();
+        console.log("Página cargada: Hola, nomas");
     </script>
-
 </body>
 </html>
